@@ -1,5 +1,5 @@
-#ifndef __ARROW_H_
-#define __ARROW_H_
+#ifndef __SCENE_H_
+#define __SCENE_H_
 
 #include <glib.h>
 #include "item.h"
@@ -18,4 +18,4 @@ void scene_remove_item(Scene *self, Item *item);
 
 G_END_DECLS
 
-#endif /* __POINT_N_SHOOT_H_ */
+#endif /* __SCENE_H_ */

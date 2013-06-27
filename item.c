@@ -11,7 +11,7 @@ void item_draw(Item *self, cairo_t *cr)
 ItemClass item_class = {
 		.parent = {
 			.name			= "Item",
-			.parent			= NULL,
+			.parent			= &base_class,
 			.size			= sizeof(Item),
 		},
 		.draw			= NULL,

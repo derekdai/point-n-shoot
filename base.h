@@ -48,4 +48,4 @@ extern BaseClass base_class;
 
 G_END_DECLS
 
-#endif /* __POINT_N_SHOOT_H_ */
+#endif /* __BASE_H_ */

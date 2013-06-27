@@ -17,7 +17,7 @@ Scene * scene_new()
 
 void scene_add_item(Scene *self, Item *item)
 {
-	self->items = g_list_prepend(self->items, item);
+	self->items = g_list_prepend(self->items, base_ref(item));
 }
 
 void scene_remove_item(Scene *self, Item *item)

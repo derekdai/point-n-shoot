@@ -9,10 +9,18 @@ G_BEGIN_DECLS
 
 typedef struct _Arrow Arrow;
 
-Arrow * arrow_new(gfloat x, gfloat y, gfloat angle, guint32 argb);
+Arrow * arrow_new(gfloat x,
+				  gfloat y,
+				  gfloat width,
+				  gfloat height,
+				  gfloat angle,
+				  gfloat speed,
+				  guint32 argb);
 
-gfloat item_get_angle(Item *self);
+void arrow_forward(Arrow *self, gfloat distance);
+
+void arrow_rotate(Arrow *self, gfloat angle);
 
 G_END_DECLS
 
-#endif /* __POINT_N_SHOOT_H_ */
+#endif /* __ARROW_H_ */
