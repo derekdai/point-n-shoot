@@ -14,8 +14,10 @@ add_definitions(-Wall)
 
 set(SRC_PNS
     main
+    base
     item
     arrow
+    scene
     point-n-shoot)
 
 set(OBJ_PNS

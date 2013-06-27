@@ -9,7 +9,9 @@ G_BEGIN_DECLS
 
 typedef struct _Arrow Arrow;
 
-Arrow * arrow_new(gfloat x, gfloat y, guint32 argb);
+Arrow * arrow_new(gfloat x, gfloat y, gfloat angle, guint32 argb);
+
+gfloat item_get_angle(Item *self);
 
 G_END_DECLS
 
