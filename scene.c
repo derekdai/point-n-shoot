@@ -28,7 +28,7 @@ void scene_remove_item(Scene *self, Item *item)
 	}
 
 	self->items = g_list_remove_link(self->items, node);
-	base_free(node->data);
+	base_unref(node->data);
 }
 
 static void scene_init(Base *base)
@@ -43,7 +43,7 @@ static void scene_draw(Item *item, cairo_t *cr)
 
 static void scene_dispose(Base *base)
 {
-	g_list_free_full(SCENE(base)->items, base_free);
+	g_list_free_full(SCENE(base)->items, base_unref);
 }
 
 static ItemClass scene_class = {

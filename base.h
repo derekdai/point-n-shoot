@@ -31,6 +31,8 @@ struct _BaseClass
 struct _Base
 {
 	BaseClass *clazz;
+
+	gint ref_count;
 };
 
 /**
@@ -38,7 +40,9 @@ struct _Base
  */
 gpointer base_new(gpointer clazz);
 
-void base_free(gpointer base);
+gpointer base_ref(gpointer base);
+
+void base_unref(gpointer base);
 
 extern BaseClass base_class;
 

@@ -18,14 +18,30 @@ gpointer base_new(gpointer clazz)
 
 	Base *self = g_slice_alloc(base_class->size);
 	self->clazz = base_class;
+	self->ref_count = 1;
 	base_init(self, base_class);
 
 	return self;
 }
 
-void base_free(gpointer base)
+gpointer base_ref(gpointer base)
 {
+	g_return_val_if_fail(base && 0 < BASE(base)->ref_count, NULL);
+
+	g_atomic_int_inc(&BASE(base)->ref_count);
+
+	return base;
+}
+
+void base_unref(gpointer base)
+{
+	g_return_if_fail(base);
+
 	Base *self = BASE(base);
+	if(! g_atomic_int_dec_and_test(&self->ref_count)) {
+		return;
+	}
+
 	BaseClass *clazz = self->clazz;
 	while(clazz) {
 		if(clazz->dispose) {
