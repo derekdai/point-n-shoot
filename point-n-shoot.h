@@ -7,13 +7,13 @@ G_BEGIN_DECLS
 
 typedef struct _PointNShoot PointNShoot;
 
-PointNShoot * pns_new();
+PointNShoot * pns_get_default();
 
 void pns_run(PointNShoot *self);
 
 void pns_quit(PointNShoot *self);
 
-void pns_free(PointNShoot *self);
+void pns_destroy();
 
 G_END_DECLS
 

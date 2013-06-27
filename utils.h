@@ -5,6 +5,9 @@
 
 G_BEGIN_DECLS
 
+#define PI				(3.141592654f)
+#define TO_RADIAN(d)	((d) / 180.0f * PI)
+
 #define ALPHA(argb)		((((argb) >> 24) & 0xff) / 255.0)
 #define RED(argb)		((((argb) >> 16) & 0xff) / 255.0)
 #define GREEN(argb)		((((argb) >> 8) & 0xff) / 255.0)
@@ -12,4 +15,4 @@ G_BEGIN_DECLS
 
 G_END_DECLS
 
-#endif /* __POINT_N_SHOOT_H_ */
+#endif /* __UTILS_H_ */

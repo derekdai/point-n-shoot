@@ -51,7 +51,7 @@ void base_unref(gpointer base)
 		clazz = clazz->parent;
 	}
 
-	g_slice_free1(clazz->size, base);
+	g_slice_free1(self->clazz->size, base);
 }
 
 BaseClass base_class = {

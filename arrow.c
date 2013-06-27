@@ -1,10 +1,12 @@
 #include "item.h"
 #include "arrow.h"
+#include "scene.h"
 #include "utils.h"
+#include "event.h"
 
 #define ANGLE_PER_ROTATE		(10.0)
 
-#define ANGLE_NORMALIZE(a)		( \
+#define NORMALIZE_DEGREE(a)		( \
 		(a) > 360.0 \
 			? (a) - 360.0f \
 			: (a) < 0.0 \
@@ -23,7 +25,7 @@ struct _Arrow
 
 	gfloat height;
 
-	gfloat angle;
+	gfloat degree;
 
 	gfloat speed;
 
@@ -36,7 +38,7 @@ Arrow * arrow_new(gfloat x,
 				  gfloat y,
 				  gfloat width,
 				  gfloat height,
-				  gfloat angle,
+				  gfloat degree,
 				  gfloat speed,
 				  guint32 argb)
 {
@@ -45,7 +47,7 @@ Arrow * arrow_new(gfloat x,
 	self->y	= y;
 	self->width = width;
 	self->height = height;
-	self->angle	= angle;
+	self->degree	= degree;
 	self->speed = speed;
 	self->argb	= argb;
 
@@ -59,7 +61,7 @@ static void arrow_draw(Item *item, cairo_t *cr)
 	guint32 argb = self->argb;
 	cairo_set_source_rgb(cr, RED(argb), GREEN(argb), BLUE(argb));
 	cairo_move_to(cr, self->x + self->width / 2, self->y + self->height / 2);
-	cairo_rotate(cr, TO_RADIAN(self->angle));
+	cairo_rotate(cr, TO_RADIAN(self->degree));
 	cairo_rel_move_to(cr, 0, -(self->height / 2));
 	cairo_rel_line_to(cr, self->width / 2, self->height);
 	cairo_rel_line_to(cr, -(self->width / 2), -(self->height / 4));
@@ -68,17 +70,45 @@ static void arrow_draw(Item *item, cairo_t *cr)
 	cairo_fill(cr);
 }
 
-void arrow_rotate(Arrow *self, gfloat angle)
+void arrow_rotate(Arrow *self, gfloat degree)
 {
 	g_return_if_fail(self);
 
-	self->angle += angle;
-	self->angle = ANGLE_NORMALIZE(self->angle);
+	self->degree += degree;
+	self->degree = NORMALIZE_DEGREE(self->degree);
 }
 
-gboolean arrow_update_key_state(Arrow *self, GameKeys keys)
+void arrow_set_x(Arrow *self, gfloat x)
 {
-	return FALSE;
+	g_return_if_fail(self);
+
+	self->x = x;
+}
+
+void arrow_set_y(Arrow *self, gfloat y)
+{
+	g_return_if_fail(self);
+
+	self->y = y;
+}
+
+void arrow_set_degree(Arrow *self, gfloat degree)
+{
+	g_return_if_fail(self);
+
+	self->degree = degree;
+}
+
+void arrow_refresh(Item *item, Scene *scene)
+{
+	Arrow *self = ARROW(item);
+	GameKeys keys = scene_get_keys(scene);
+	if(GAME_KEYS_LEFT & keys) {
+		arrow_rotate(self, ANGLE_PER_ROTATE);
+	}
+	else if(GAME_KEYS_RIGHT & keys) {
+		arrow_rotate(self, -ANGLE_PER_ROTATE);
+	}
 }
 
 static ItemClass arrow_class = {
@@ -88,4 +118,5 @@ static ItemClass arrow_class = {
 			.size			= sizeof(Arrow),
 		},
 		.draw			= arrow_draw,
+		.refresh		= arrow_refresh,
 };

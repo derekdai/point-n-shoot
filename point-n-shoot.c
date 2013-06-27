@@ -2,7 +2,6 @@
 #include <gdk/gdkkeysyms.h>
 #include "point-n-shoot.h"
 #include "scene.h"
-#include "arrow.h"
 #include "event.h"
 
 #define APPLICATION_ID		"idv.dabod.PointNShoot"
@@ -10,16 +9,6 @@
 #define DEFAULT_WIDTH		(1280)
 
 #define DEFAULT_HEIGHT		(720)
-
-#define ARROW_WIDTH			(16.0)
-
-#define ARROW_HEIGHT		(20.0)
-
-#define ARROW_ANGLE			(90.0)
-
-#define ARROW_SPEED			(10.0)
-
-#define ARROW_COLOR			(0xffff0000)
 
 #define KEY_NOTIFY_INTERVAL	(100)
 
@@ -29,15 +18,9 @@ struct _PointNShoot
 
 	GtkWidget *main_win;
 
-	GtkWidget *canvas;
-
 	Scene *scene;
 
-	Arrow *arrow;
-
 	GameKeys keys;
-
-	guint key_notify_handle;
 };
 
 static void pns_activate(PointNShoot *self);
@@ -50,6 +33,8 @@ static void pns_key_press(PointNShoot *self, GdkEventKey *event);
 
 static void pns_key_release(PointNShoot *self, GdkEventKey *event);
 
+static PointNShoot * pns = NULL;;
+
 PointNShoot * pns_new()
 {
 	PointNShoot *self = g_slice_new(PointNShoot);
@@ -59,25 +44,39 @@ PointNShoot * pns_new()
 							 "activate",
 							 G_CALLBACK(pns_activate),
 							 self);
-	self->arrow = arrow_new(DEFAULT_WIDTH / 2,
-							DEFAULT_HEIGHT / 2,
-							ARROW_WIDTH,
-							ARROW_HEIGHT,
-							ARROW_ANGLE,
-							ARROW_SPEED,
-							ARROW_COLOR);
 	self->scene = scene_new();
-	scene_add_item(self->scene, ITEM(self->arrow));
 	self->main_win = NULL;
 	self->keys = GAME_KEYS_NONE;
-	self->key_notify_handle = 0;
 
 	return self;
+}
+
+PointNShoot * pns_get_default()
+{
+	if(! pns) {
+		pns = pns_new();
+	}
+
+	return pns;
+}
+
+static gboolean pns_window_size_allocate(PointNShoot *self,
+										 GdkRectangle *rect,
+										 GtkWidget *win)
+{
+	if(SCENE_STATE_NULL == scene_get_state(self->scene)) {
+		scene_set_width(self->scene, rect->width);
+		scene_set_height(self->scene, rect->height);
+		scene_start(self->scene);
+	}
+
+	return TRUE;
 }
 
 static void pns_activate(PointNShoot *self)
 {
 	self->main_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//	gtk_window_set_resizable(GTK_WINDOW(self->main_win), FALSE);
 	gtk_window_set_default_size(GTK_WINDOW(self->main_win),
 								DEFAULT_WIDTH,
 								DEFAULT_HEIGHT);
@@ -94,16 +93,13 @@ static void pns_activate(PointNShoot *self)
 							 "key-release-event",
 							 G_CALLBACK(pns_key_release),
 							 self);
-
-	self->canvas = gtk_drawing_area_new();
-	gtk_widget_add_events(self->canvas,
-						  GDK_KEY_PRESS_MASK |
-						  GDK_KEY_RELEASE_MASK);
-	g_signal_connect_swapped(self->canvas,
-							 "draw",
-							 G_CALLBACK(pns_draw),
+	g_signal_connect_swapped(self->main_win,
+							 "size-allocate",
+							 G_CALLBACK(pns_window_size_allocate),
 							 self);
-	gtk_container_add(GTK_CONTAINER(self->main_win), self->canvas);
+
+	gtk_container_add(GTK_CONTAINER(self->main_win),
+					  scene_get_widget(self->scene));
 
 	gtk_widget_show_all(self->main_win);
 
@@ -137,13 +133,23 @@ void pns_quit(PointNShoot *self)
 	g_application_quit(G_APPLICATION(self->app));
 }
 
-void pns_free(PointNShoot *self)
+static void pns_free(PointNShoot *self)
 {
 	g_return_if_fail(self);
+
+	base_unref(self->scene);
 
 	g_object_unref(self->app);
 
 	g_slice_free(PointNShoot, self);
+}
+
+void pns_destroy()
+{
+	if(pns) {
+		pns_free(pns);
+		pns = NULL;
+	}
 }
 
 static void pns_draw(PointNShoot *self, cairo_t *cr, GtkWidget *widget)
@@ -151,25 +157,9 @@ static void pns_draw(PointNShoot *self, cairo_t *cr, GtkWidget *widget)
 	item_draw(ITEM(self->scene), cr);
 }
 
-static gboolean pns_notify_key_state(PointNShoot *self)
+static void pns_notify_key_state(PointNShoot *self)
 {
-	return TRUE;
-}
-
-static void pns_check_key_state(PointNShoot *self)
-{
-	if(self->key_notify_handle) {
-		g_source_remove(self->key_notify_handle);
-		self->key_notify_handle = 0;
-	}
-
-	if(! self->keys) {
-		return;
-	}
-
-	self->key_notify_handle = g_timeout_add(KEY_NOTIFY_INTERVAL,
-											(GSourceFunc) pns_notify_key_state,
-											self);
+	scene_set_keys(self->scene, self->keys);
 }
 
 static void pns_key_press(PointNShoot *self, GdkEventKey *event)
@@ -202,7 +192,7 @@ static void pns_key_press(PointNShoot *self, GdkEventKey *event)
 
 	self->keys |= keys;
 
-	pns_check_key_state(self);
+	pns_notify_key_state(self);
 }
 
 static void pns_key_release(PointNShoot *self, GdkEventKey *event)
@@ -228,5 +218,5 @@ static void pns_key_release(PointNShoot *self, GdkEventKey *event)
 		return;
 	}
 
-	pns_check_key_state(self);
+	pns_notify_key_state(self);
 }

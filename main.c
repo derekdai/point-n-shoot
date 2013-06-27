@@ -5,8 +5,9 @@ gint main(gint argc, gchar *args[])
 {
 	gtk_init(&argc, &args);
 
-	PointNShoot *pns = pns_new();
+	PointNShoot *pns = pns_get_default();
 	pns_run(pns);
+	pns_destroy();
 
 	return 0;
 }

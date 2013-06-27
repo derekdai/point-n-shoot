@@ -14,15 +14,19 @@ Arrow * arrow_new(gfloat x,
 				  gfloat y,
 				  gfloat width,
 				  gfloat height,
-				  gfloat angle,
+				  gfloat degree,
 				  gfloat speed,
 				  guint32 argb);
 
+void arrow_set_x(Arrow *self, gfloat x);
+
+void arrow_set_y(Arrow *self, gfloat x);
+
+void arrow_set_degree(Arrow *self, gfloat x);
+
 void arrow_forward(Arrow *self, gfloat distance);
 
-void arrow_rotate(Arrow *self, gfloat angle);
-
-gboolean arrow_update_key_state(Arrow *self, GameKeys keys);
+void arrow_rotate(Arrow *self, gfloat degree);
 
 G_END_DECLS
 
