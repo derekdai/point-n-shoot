@@ -2,15 +2,15 @@
 #include "arrow.h"
 #include "utils.h"
 
-#define ARROW_WIDTH			(16.0)
+#define ARROW_WIDTH			(20.0)
 
-#define ARROW_HEIGHT		(20.0)
+#define ARROW_HEIGHT		(16.0)
 
 #define ARROW_ANGLE			(90.0)
 
 #define ARROW_SPEED			(10.0)
 
-#define ARROW_COLOR			(0xffff0000)
+#define ARROW_COLOR			(0xffffff00)
 
 #define MS_PER_SECOND		(1000)
 

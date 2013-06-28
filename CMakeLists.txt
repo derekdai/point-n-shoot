@@ -24,4 +24,4 @@ set(OBJ_PNS
     point-n-shoot)
 
 add_executable(${OBJ_PNS} ${SRC_PNS})
-target_link_libraries(${OBJ_PNS} ${GTK_LIBRARIES}) 
+target_link_libraries(${OBJ_PNS} ${GTK_LIBRARIES} m)

@@ -1,3 +1,4 @@
+#include <math.h>
 #include "item.h"
 #include "arrow.h"
 #include "scene.h"
@@ -32,7 +33,19 @@ struct _Arrow
 	guint32 argb;
 };
 
-static ItemClass arrow_class;
+static void arrow_draw(Item *item, cairo_t *cr);
+
+static void arrow_refresh(Item *item, Scene *scene);
+
+static ItemClass arrow_class = {
+		.parent = {
+			.name			= "Arrow",
+			.parent			= BASE_CLASS(&item_class),
+			.size			= sizeof(Arrow),
+		},
+		.draw			= arrow_draw,
+		.refresh		= arrow_refresh,
+};
 
 Arrow * arrow_new(gfloat x,
 				  gfloat y,
@@ -58,16 +71,28 @@ static void arrow_draw(Item *item, cairo_t *cr)
 {
 	Arrow *self = ARROW(item);
 
+	gfloat half_width = self->width / 2, half_height = self->height / 2;
+	cairo_move_to(cr, self->x + half_width, self->y + half_height);
+	cairo_rotate(cr, TO_RADIAN(self->degree));
+	cairo_rel_move_to(cr, half_width, 0);
+
 	guint32 argb = self->argb;
 	cairo_set_source_rgb(cr, RED(argb), GREEN(argb), BLUE(argb));
-	cairo_move_to(cr, self->x + self->width / 2, self->y + self->height / 2);
-	cairo_rotate(cr, TO_RADIAN(self->degree));
-	cairo_rel_move_to(cr, 0, -(self->height / 2));
-	cairo_rel_line_to(cr, self->width / 2, self->height);
-	cairo_rel_line_to(cr, -(self->width / 2), -(self->height / 4));
-	cairo_rel_line_to(cr, -(self->width / 2), self->height / 4);
+	cairo_rel_line_to(cr, -self->width, half_height);
+	cairo_rel_line_to(cr, half_width / 2, -half_height);
+	cairo_rel_line_to(cr, -(half_width / 2), -half_height);
 	cairo_close_path(cr);
 	cairo_fill(cr);
+	cairo_stroke(cr);
+}
+
+void arrow_forward(Arrow *self, gfloat distance)
+{
+	gfloat radian = TO_RADIAN(self->degree);
+	gfloat h = cos(radian);
+	gfloat v = sin(radian);
+	self->x += distance * h;
+	self->y += distance * v;
 }
 
 void arrow_rotate(Arrow *self, gfloat degree)
@@ -99,7 +124,7 @@ void arrow_set_degree(Arrow *self, gfloat degree)
 	self->degree = degree;
 }
 
-void arrow_refresh(Item *item, Scene *scene)
+static void arrow_refresh(Item *item, Scene *scene)
 {
 	Arrow *self = ARROW(item);
 	GameKeys keys = scene_get_keys(scene);
@@ -109,14 +134,7 @@ void arrow_refresh(Item *item, Scene *scene)
 	else if(GAME_KEYS_RIGHT & keys) {
 		arrow_rotate(self, -ANGLE_PER_ROTATE);
 	}
+	if(GAME_KEYS_UP & keys) {
+		arrow_forward(self, 10.0);
+	}
 }
-
-static ItemClass arrow_class = {
-		.parent = {
-			.name			= "Arrow",
-			.parent			= BASE_CLASS(&item_class),
-			.size			= sizeof(Arrow),
-		},
-		.draw			= arrow_draw,
-		.refresh		= arrow_refresh,
-};
