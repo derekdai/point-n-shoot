@@ -10,7 +10,7 @@
 
 #define ARROW_SPEED			(10.0)
 
-#define ARROW_COLOR			(0xffffff00)
+#define ARROW_COLOR			(0xff5f5f5f)
 
 #define MS_PER_SECOND		(1000)
 
