@@ -39,6 +39,10 @@ struct _Scene
 	SceneState state;
 };
 
+static void scene_init(Base *base);
+
+static void scene_dispose(Base *base);
+
 static void scene_start_refresh_timer(Scene *self);
 
 static void scene_remove_refresh_timer(Scene *self);
@@ -47,7 +51,16 @@ static void scene_remove_all_items(Scene *self);
 
 static void scene_draw(Scene *self, cairo_t *cr);
 
-static ItemClass scene_class;
+static ItemClass scene_class = {
+		.parent = {
+			.name			= "Scene",
+			.parent			= BASE_CLASS(&item_class),
+			.size			= sizeof(Scene),
+			.init			= scene_init,
+			.dispose		= scene_dispose,
+		},
+		.draw			= scene_draw,
+};
 
 Scene * scene_new()
 {
@@ -242,14 +255,3 @@ GameKeys scene_get_keys(Scene *self)
 
 	return self->keys;
 }
-
-static ItemClass scene_class = {
-		.parent = {
-			.name			= "Scene",
-			.parent			= BASE_CLASS(&item_class),
-			.size			= sizeof(Scene),
-			.init			= scene_init,
-			.dispose		= scene_dispose,
-		},
-		.draw			= scene_draw,
-};
