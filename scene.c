@@ -121,6 +121,10 @@ static void scene_init(Base *base)
 							 "draw",
 							 G_CALLBACK(scene_draw),
 							 self);
+	g_signal_connect_swapped(self->canvas,
+							 "destroy",
+							 G_CALLBACK(scene_pause),
+							 self);
 
 	self->arrow = arrow_new(0.0,
 							0.0,

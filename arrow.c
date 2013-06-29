@@ -142,13 +142,36 @@ static void arrow_refresh(Item *item, Scene *scene)
 {
 	Arrow *self = ARROW(item);
 	GameKeys keys = scene_get_keys(scene);
-	if(GAME_KEYS_LEFT & keys) {
-		arrow_rotate(self, ANGLE_PER_ROTATE);
+	keys &= (GAME_KEYS_UP | GAME_KEYS_DOWN | GAME_KEYS_LEFT | GAME_KEYS_RIGHT);
+	switch(keys) {
+	case GAME_KEYS_UP:
+		self->degree = 270.0;
+		break;
+	case GAME_KEYS_DOWN:
+		self->degree = 90.0;
+		break;
+	case GAME_KEYS_LEFT:
+		self->degree = 180.0;
+		break;
+	case GAME_KEYS_RIGHT:
+		self->degree = 0.0;
+		break;
+	case GAME_KEYS_UP | GAME_KEYS_RIGHT:
+		self->degree = 315.0;
+		break;
+	case GAME_KEYS_UP | GAME_KEYS_LEFT:
+		self->degree = 225.0;
+		break;
+	case GAME_KEYS_DOWN | GAME_KEYS_RIGHT:
+		self->degree = 45.0;
+		break;
+	case GAME_KEYS_DOWN | GAME_KEYS_LEFT:
+		self->degree = 135.0;
+		break;
+	default:
+		return;
 	}
-	else if(GAME_KEYS_RIGHT & keys) {
-		arrow_rotate(self, -ANGLE_PER_ROTATE);
-	}
-	if(GAME_KEYS_UP & keys) {
-		arrow_forward(self, 10.0);
-	}
+
+	self->x += self->speed * cos(TO_RADIAN(self->degree));
+	self->y += self->speed * sin(TO_RADIAN(self->degree));
 }
