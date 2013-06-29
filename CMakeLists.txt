@@ -17,6 +17,7 @@ set(SRC_PNS
     base
     item
     arrow
+    dot
     scene
     point-n-shoot)
 

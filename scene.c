@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "arrow.h"
+#include "dot.h"
 #include "utils.h"
 
 #define ARROW_WIDTH			(20.0)
@@ -11,6 +12,12 @@
 #define ARROW_SPEED			(10.0)
 
 #define ARROW_COLOR			(0xff5f5f5f)
+
+#define DOT_RADIUS			(5.0)
+
+#define DOT_SPEED			(0.005)
+
+#define DOT_COLOR			(0xffff6f6f)
 
 #define MS_PER_SECOND		(1000)
 
@@ -105,6 +112,16 @@ static void scene_init(Base *base)
 	self->width = 0;
 	self->height = 0;
 	self->items = NULL;
+	self->timer_handle = 0;
+	self->state = SCENE_STATE_NULL;
+	self->keys = GAME_KEYS_NONE;
+
+	self->canvas = gtk_drawing_area_new();
+	g_signal_connect_swapped(self->canvas,
+							 "draw",
+							 G_CALLBACK(scene_draw),
+							 self);
+
 	self->arrow = arrow_new(0.0,
 							0.0,
 							ARROW_WIDTH,
@@ -112,16 +129,7 @@ static void scene_init(Base *base)
 							ARROW_ANGLE,
 							ARROW_SPEED,
 							ARROW_COLOR);
-	self->timer_handle = 0;
-	self->state = SCENE_STATE_NULL;
-	self->keys = GAME_KEYS_NONE;
 	scene_add_item(self, ITEM(self->arrow));
-
-	self->canvas = gtk_drawing_area_new();
-	g_signal_connect_swapped(self->canvas,
-							 "draw",
-							 G_CALLBACK(scene_draw),
-							 self);
 }
 
 GtkWidget * scene_get_widget(Scene *self)
@@ -208,6 +216,21 @@ void scene_start(Scene *self)
 
 	if(SCENE_STATE_NULL == self->state) {
 		scene_reset_arrow(self);
+
+		gint i;
+		GRand *rand = g_rand_new();
+		gdouble x_range_end = self->width - DOT_RADIUS;
+		gdouble y_range_end = self->height - DOT_RADIUS;
+		for(i = 0; i < 50; i ++) {
+			Dot *dot = dot_new(g_rand_double_range(rand, DOT_RADIUS, x_range_end),
+							   g_rand_double_range(rand, DOT_RADIUS, y_range_end),
+							   DOT_SPEED,
+							   DOT_RADIUS,
+							   DOT_COLOR);
+			scene_add_item(self, ITEM(dot));
+			base_unref(dot);
+		}
+		g_rand_free(rand);
 	}
 
 	scene_start_refresh_timer(self);
@@ -254,4 +277,12 @@ GameKeys scene_get_keys(Scene *self)
 	g_return_val_if_fail(self, GAME_KEYS_NONE);
 
 	return self->keys;
+}
+
+void scene_get_arrow_postion(Scene *self, gfloat *x, gfloat *y)
+{
+	g_return_if_fail(self && x && y);
+
+	*x = arrow_get_x(self->arrow);
+	*y = arrow_get_y(self->arrow);
 }

@@ -45,6 +45,8 @@ void scene_set_keys(Scene *self, GameKeys keys);
 
 GameKeys scene_get_keys(Scene *self);
 
+void scene_get_arrow_postion(Scene *self, gfloat *x, gfloat *y);
+
 G_END_DECLS
 
 #endif /* __SCENE_H_ */

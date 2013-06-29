@@ -20,7 +20,11 @@ Arrow * arrow_new(gfloat x,
 
 void arrow_set_x(Arrow *self, gfloat x);
 
+gfloat arrow_get_x(Arrow *self);
+
 void arrow_set_y(Arrow *self, gfloat x);
+
+gfloat arrow_get_y(Arrow *self);
 
 void arrow_set_degree(Arrow *self, gfloat x);
 

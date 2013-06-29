@@ -110,11 +110,25 @@ void arrow_set_x(Arrow *self, gfloat x)
 	self->x = x;
 }
 
+gfloat arrow_get_x(Arrow *self)
+{
+	g_return_val_if_fail(self, 0.0);
+
+	return self->x;
+}
+
 void arrow_set_y(Arrow *self, gfloat y)
 {
 	g_return_if_fail(self);
 
 	self->y = y;
+}
+
+gfloat arrow_get_y(Arrow *self)
+{
+	g_return_val_if_fail(self, 0.0);
+
+	return self->y;
 }
 
 void arrow_set_degree(Arrow *self, gfloat degree)
