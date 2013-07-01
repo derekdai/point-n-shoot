@@ -1,3 +1,4 @@
+#include <math.h>
 #include "item.h"
 #include "dot.h"
 #include "scene.h"
@@ -17,8 +18,6 @@ struct _Dot
 
 	guint32 argb;
 };
-
-static void dot_init(Dot *self);
 
 static void dot_draw(Item *item, cairo_t *cr);
 
@@ -58,10 +57,28 @@ static void dot_draw(Item *item, cairo_t *cr)
 
 static void dot_refresh(Item *item, Scene *scene)
 {
+	Dot *self = DOT(item);
+
 	gfloat arrow_x, arrow_y;
 	scene_get_arrow_postion(scene, &arrow_x, &arrow_y);
 
-	Dot *self = DOT(item);
-	self->x += (arrow_x - self->x) * self->speed;
-	self->y += (arrow_y - self->y) * self->speed;
+	gfloat delta_x = arrow_x - self->x;
+	gfloat delta_y = arrow_y - self->y;
+	gfloat len = sqrt(delta_x * delta_x + delta_y *delta_y);
+	if(0 == len) {
+		return;
+	}
+
+	/* dot product is a better choice which don't have divided by zero problem */
+	gfloat unit_x = delta_x / len;
+	gfloat unit_y = delta_y / len;
+	gfloat dot_prod = unit_x * 1 + unit_y * 0;
+	gfloat radian = acos(dot_prod);
+	if(delta_y < 0) {
+		radian += PI;
+	}
+	//g_message("%f\t%f\t%f\t%f\t%f", self->x, self->y, delta_x, delta_y, radian * 180 / PI);
+
+	self->x += self->speed * dot_prod;
+	self->y += self->speed * sin(radian);
 }

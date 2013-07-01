@@ -9,13 +9,13 @@
 
 #define ARROW_ANGLE			(90.0)
 
-#define ARROW_SPEED			(10.0)
+#define ARROW_SPEED			(5.0)
 
 #define ARROW_COLOR			(0xff5f5f5f)
 
 #define DOT_RADIUS			(5.0)
 
-#define DOT_SPEED			(0.005)
+#define DOT_SPEED			(1)
 
 #define DOT_COLOR			(0xffff6f6f)
 
@@ -221,20 +221,36 @@ void scene_start(Scene *self)
 	if(SCENE_STATE_NULL == self->state) {
 		scene_reset_arrow(self);
 
-		gint i;
-		GRand *rand = g_rand_new();
-		gdouble x_range_end = self->width - DOT_RADIUS;
-		gdouble y_range_end = self->height - DOT_RADIUS;
-		for(i = 0; i < 50; i ++) {
-			Dot *dot = dot_new(g_rand_double_range(rand, DOT_RADIUS, x_range_end),
-							   g_rand_double_range(rand, DOT_RADIUS, y_range_end),
-							   DOT_SPEED,
-							   DOT_RADIUS,
-							   DOT_COLOR);
-			scene_add_item(self, ITEM(dot));
-			base_unref(dot);
-		}
-		g_rand_free(rand);
+		Dot *dot = dot_new(100, 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
+		scene_add_item(self, ITEM(dot));
+		base_unref(dot);
+
+		dot = dot_new(self->width - 100, 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
+		scene_add_item(self, ITEM(dot));
+		base_unref(dot);
+
+		dot = dot_new(100, self->height - 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
+		scene_add_item(self, ITEM(dot));
+		base_unref(dot);
+
+		dot = dot_new(self->width - 100, self->height - 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
+		scene_add_item(self, ITEM(dot));
+		base_unref(dot);
+
+//		gint i;
+//		GRand *rand = g_rand_new();
+//		gdouble x_range_end = self->width - DOT_RADIUS;
+//		gdouble y_range_end = self->height - DOT_RADIUS;
+//		for(i = 0; i < 50; i ++) {
+//			Dot *dot = dot_new(g_rand_double_range(rand, DOT_RADIUS, x_range_end),
+//							   g_rand_double_range(rand, DOT_RADIUS, y_range_end),
+//							   DOT_SPEED,
+//							   DOT_RADIUS,
+//							   DOT_COLOR);
+//			scene_add_item(self, ITEM(dot));
+//			base_unref(dot);
+//		}
+//		g_rand_free(rand);
 	}
 
 	scene_start_refresh_timer(self);
