@@ -30,11 +30,36 @@ struct _ItemClass
 struct _Item
 {
 	Base parent;
+
+	Item *prev;
+
+	Item *next;
 };
 
 void item_draw(Item *self, cairo_t *cr);
 
-void item_refresh(Item *item, struct _Scene *scene);
+void item_refresh(Item *self, struct _Scene *scene);
+
+Item * item_get_prev(Item *self);
+
+Item * item_get_next(Item *self);
+
+/**
+ * won't base_ref()
+ */
+Item * item_append(Item *self, Item *items);
+
+/**
+ * won't base_ref()
+ */
+Item * item_prepend(Item *self, Item *items);
+
+/**
+ * won't base_unref()
+ */
+Item * item_remove(Item *self, Item * item);
+
+void item_foreach(Item *self, GFunc func, gpointer user_data);
 
 extern ItemClass item_class;
 

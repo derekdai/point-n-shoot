@@ -27,8 +27,6 @@ static void pns_activate(PointNShoot *self);
 
 static void pns_request_quit(PointNShoot *self);
 
-static void pns_draw(PointNShoot *self, cairo_t *cr, GtkWidget *widget);
-
 static void pns_key_press(PointNShoot *self, GdkEventKey *event);
 
 static void pns_key_release(PointNShoot *self, GdkEventKey *event);
@@ -150,11 +148,6 @@ void pns_destroy()
 		pns_free(pns);
 		pns = NULL;
 	}
-}
-
-static void pns_draw(PointNShoot *self, cairo_t *cr, GtkWidget *widget)
-{
-	item_draw(ITEM(self->scene), cr);
 }
 
 static void pns_notify_key_state(PointNShoot *self)

@@ -37,7 +37,7 @@ struct _Scene
 
 	Arrow *arrow;
 
-	GList *items;
+	Item *items;
 
 	guint timer_handle;
 
@@ -56,7 +56,7 @@ static void scene_remove_refresh_timer(Scene *self);
 
 static void scene_remove_all_items(Scene *self);
 
-static void scene_draw(Scene *self, cairo_t *cr);
+static void scene_draw(Item *item, cairo_t *cr);
 
 static ItemClass scene_class = {
 		.parent = {
@@ -66,7 +66,7 @@ static ItemClass scene_class = {
 			.init			= scene_init,
 			.dispose		= scene_dispose,
 		},
-		.draw			= scene_draw,
+		.draw				= scene_draw,
 };
 
 Scene * scene_new()
@@ -92,18 +92,19 @@ void scene_set_height(Scene *self, gfloat height)
 
 void scene_add_item(Scene *self, Item *item)
 {
-	self->items = g_list_prepend(self->items, base_ref(item));
+	g_return_if_fail(self);
+	g_return_if_fail(item);
+
+	self->items = item_prepend(self->items, base_ref(item));
 }
 
 void scene_remove_item(Scene *self, Item *item)
 {
-	GList *node = g_list_find(self->items, item);
-	if(! node) {
-		return;
-	}
+	g_return_if_fail(self);
+	g_return_if_fail(item);
 
-	self->items = g_list_remove_link(self->items, node);
-	base_unref(node->data);
+	self->items = item_remove(self->items, item);
+	base_unref(item);
 }
 
 static void scene_init(Base *base)
@@ -143,9 +144,9 @@ GtkWidget * scene_get_widget(Scene *self)
 	return self->canvas;
 }
 
-static void scene_draw(Scene *self, cairo_t *cr)
+static void scene_draw(Item *item, cairo_t *cr)
 {
-	g_list_foreach(self->items, (GFunc) item_draw, cr);
+	item_foreach(SCENE(item)->items, (GFunc) item_draw, cr);
 }
 
 static void scene_dispose(Base *base)
@@ -158,7 +159,7 @@ static void scene_dispose(Base *base)
 static gboolean scene_refresh(Scene *self)
 {
 	item_refresh(ITEM(self->arrow), self);
-	g_list_foreach(self->items, (GFunc) item_refresh, self);
+	item_foreach(self->items, (GFunc) item_refresh, self);
 	gtk_widget_queue_draw(self->canvas);
 
 	return TRUE;
@@ -192,10 +193,15 @@ static void scene_reset_arrow(Scene *self)
 	arrow_set_degree(self->arrow, ARROW_ANGLE);
 }
 
+static void scene_remove_one_item(Item *item, Scene *self)
+{
+	scene_remove_item(self, item);
+}
+
 static void scene_remove_all_items(Scene *self)
 {
 	if(self->items) {
-		g_list_free_full(self->items, base_unref);
+		item_foreach(self->items, (GFunc) scene_remove_one_item, self);
 		self->items = NULL;
 	}
 }
