@@ -3,6 +3,18 @@
 #include "point-n-shoot.h"
 #include "config.h"
 
+void handle_bus_message(GstBus *bus, GstMessage *message, GstElement *playbin)
+{
+	switch(message->type) {
+	case GST_MESSAGE_EOS:
+		gst_element_set_state(playbin, GST_STATE_NULL);
+		gst_element_set_state(playbin, GST_STATE_PLAYING);
+		break;
+	default:
+		break;
+	}
+}
+
 gint main(gint argc, gchar *args[])
 {
 	gtk_init(&argc, &args);
@@ -12,8 +24,16 @@ gint main(gint argc, gchar *args[])
 	g_object_set(playbin, "uri", "file://" MUSIC_DIR "DST-1990.mp3", NULL);
 	gst_element_set_state(playbin, GST_STATE_PLAYING);
 
+	GstBus *bus = gst_element_get_bus(playbin);
+	gst_bus_add_signal_watch(bus);
+	g_signal_connect(bus, "message", G_CALLBACK(handle_bus_message), playbin);
+
 	PointNShoot *pns = pns_get_default();
 	pns_run(pns);
+
+	gst_bus_remove_signal_watch(bus);
+	g_object_unref(bus);
+
 	pns_destroy();
 
 	return 0;
