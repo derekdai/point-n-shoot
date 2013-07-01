@@ -17,7 +17,7 @@ $ git clone git://github.com/derekdai/point-n-shoot.git
 
 How to build?
 =============
-Output of source tree build is recommended way to build point-n-shoot.
+Out of source tree build is recommended way to build point-n-shoot.
 ```bash
 $ mkdir point-n-shoot_build
 $ cd point-n-shoot_build
