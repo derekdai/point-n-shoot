@@ -18,13 +18,13 @@ add_definitions(-Wall)
 configure_file(config.h.cmake ${CMAKE_BINARY_DIR}/config.h @ONLY)
 
 set(SRC_PNS
-    main
-    base
-    item
-    arrow
-    dot
-    scene
-    point-n-shoot)
+    src/main
+    src/base
+    src/item
+    src/arrow
+    src/dot
+    src/scene
+    src/point-n-shoot)
 
 set(OBJ_PNS
     point-n-shoot)
