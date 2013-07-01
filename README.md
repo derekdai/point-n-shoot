@@ -2,11 +2,11 @@ point-n-shoot
 =============
 Point and shoot is a simple but exciting shooting game.
 
-Prerequisitions
+Prerequisits
 =============
 In Ubuntu Linux, install following packages first
 ```bash
-$ sudo apt-get install build-essential git libgtk-3-dev cmake
+$ sudo apt-get install build-essential git libgtk-3-dev libgstreamer1.0-dev cmake
 ```
 
 Get the source code
