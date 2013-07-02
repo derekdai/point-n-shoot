@@ -251,10 +251,10 @@ static void pns_handle_joystick_event(Joystick *joystick,
 			  event->value);
 
 	if(event->number & 1) {
-		if(0 == event->value) {
+		if(0.0 == event->value) {
 			self->keys &= ~(GAME_KEYS_UP | GAME_KEYS_DOWN);
 		}
-		else if(0 > event->value) {
+		else if(0.0 > event->value) {
 			self->keys |= GAME_KEYS_UP;
 		}
 		else {
@@ -262,10 +262,10 @@ static void pns_handle_joystick_event(Joystick *joystick,
 		}
 	}
 	else {
-		if(0 == event->value) {
+		if(0.0 == event->value) {
 			self->keys &= ~(GAME_KEYS_LEFT | GAME_KEYS_RIGHT);
 		}
-		else if(0 > event->value) {
+		else if(0.0 > event->value) {
 			self->keys |= GAME_KEYS_LEFT;
 		}
 		else {
