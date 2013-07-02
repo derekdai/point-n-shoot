@@ -3,6 +3,8 @@
 #include "point-n-shoot.h"
 #include "scene.h"
 #include "event.h"
+#include "joystick.h"
+#include "config.h"
 
 #define APPLICATION_ID		"idv.dabod.PointNShoot"
 

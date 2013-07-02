@@ -1,3 +1,6 @@
 #define MUSIC_DIR			"@MUSIC_DIR@"
 
 #define MUSIC_FILE			"DST-1990.mp3"
+
+#include @JOYSTICK_HEADER@
+#define JOYSTICK_TYPE		(&@JOYSTICK_TYPE@)

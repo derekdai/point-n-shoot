@@ -9,13 +9,14 @@ find_package(PkgConfig)
 pkg_check_modules(GTK REQUIRED gtk+-3.0)
 pkg_check_modules(GST REQUIRED gstreamer-1.0)
 
-include_directories(${GTK_INCLUDE_DIRS} ${GST_INCLUDE_DIRS} ${CMAKE_BINARY_DIR})
+include_directories(${GTK_INCLUDE_DIRS}
+                    ${GST_INCLUDE_DIRS}
+                    ${CMAKE_BINARY_DIR}
+                    ${CMAKE_SOURCE_DIR}/src)
 
 link_directories(${GTK_LIBRARY_DIRS} ${GST_LIBRARY_DIRS})
 
 add_definitions(-Wall)
-
-configure_file(config.h.cmake ${CMAKE_BINARY_DIR}/config.h @ONLY)
 
 set(SRC_PNS
     src/main
@@ -24,7 +25,14 @@ set(SRC_PNS
     src/arrow
     src/dot
     src/scene
+    src/joystick
     src/point-n-shoot)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    list(APPEND SRC_PNS src/linuxjs)
+    set(JOYSTICK_TYPE linux_js_class)
+    set(JOYSTICK_HEADER \"linuxjs.h\")
+endif()
 
 set(OBJ_PNS
     point-n-shoot)
@@ -36,3 +44,5 @@ set(SRC_TEST_JOYSTICK tests/test-joystick)
 set(OBJ_TEST_JOYSTICK tests-joystick)
 add_executable(${OBJ_TEST_JOYSTICK} ${SRC_TEST_JOYSTICK})
 target_link_libraries(${OBJ_TEST_JOYSTICK} ${GTK_LIBRARIES})
+
+configure_file(config.h.cmake ${CMAKE_BINARY_DIR}/config.h @ONLY)
