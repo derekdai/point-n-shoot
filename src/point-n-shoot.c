@@ -87,7 +87,7 @@ static void pns_handle_joystick_event(Joystick *joystick,
 		 	 	 	 	 	 	 	  JoystickEvent *event,
 		 	 	 	 	 	 	 	  PointNShoot *self)
 {
-	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%d]",
+	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%f]",
 			  joystick_get_name(joystick),
 			  event->time,
 			  event->type == JOYSTICK_EVENT_BUTTON ? "BUTTON" : "AXIS",

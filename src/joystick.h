@@ -36,10 +36,10 @@ struct _JoystickEvent
 	guint time;
 
 	/* button or axis number */
-	gint16 number;
+	gint number;
 
-	/*for buttons, 1 (press) or 0 (release). for axes, range from -32768 to 31767*/
-	gint16 value;
+	/*for buttons, 1 (press) or 0 (release). for axes -1 ~ 0 ~ 1*/
+	gfloat value;
 };
 
 struct _JoystickClass

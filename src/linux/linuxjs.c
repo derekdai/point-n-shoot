@@ -38,7 +38,9 @@ static gboolean linux_js_event_ready(gint fd, GIOCondition cond, LinuxJs *self)
 								: JOYSTICK_EVENT_AXES,
 			.time		= native_event.time,
 			.number		= native_event.number,
-			.value		= native_event.value,
+			.value		= native_event.type & JS_EVENT_BUTTON
+								? native_event.value
+								: native_event.value / 32767.0,
 	};
 	joystick_dispatch_event(JOYSTICK(self), &event);
 
