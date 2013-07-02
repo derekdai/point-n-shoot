@@ -11,16 +11,30 @@ G_BEGIN_DECLS
 
 #define JOYSTICK_GET_CLASS(o)		(JOYSTICK_CLASS(BASE_GET_CLASS(o)))
 
+typedef enum _JoystickEventType JoystickEventType;
+
 typedef struct _JoystickClass JoystickClass;
 
 typedef struct _Joystick Joystick;
 
 typedef struct _JoystickEvent JoystickEvent;
 
-typedef void (*JoystickEventHandler)(Joystick *self, JoystickEvent *event);
+typedef void (*JoystickEventHandler)(Joystick *self,
+									 JoystickEvent *event,
+									 gpointer user_data);
+
+enum _JoystickEventType
+{
+	JOYSTICK_EVENT_BUTTON		= 1 << 0,
+	JOYSTICK_EVENT_AXES			= 1 << 1,
+};
 
 struct _JoystickEvent
 {
+	JoystickEventType type;
+
+	guint time;
+
 	/* button or axis number */
 	gint16 number;
 
@@ -32,39 +46,47 @@ struct _JoystickClass
 {
 	BaseClass parent;
 
-	gboolean (*open)(Joystick *self);
+	gboolean (*open)(Joystick *joystick, const gchar *uri, GError **error);
 
-	void (*close)(Joystick *self);
+	void (*close)(Joystick *joystick);
 
-	gint (*get_n_buttons)(Joystick *self);
+	gint (*get_n_buttons)(Joystick *joystick, GError **error);
 
-	gint (*get_n_axes)(Joystick *self);
+	gint (*get_n_axes)(Joystick *joystick, GError **error);
 
-	void (*get_value_range)(Joystick *self,
-							gint *value_min,
-							gint *value_max);
+	gchar * (*get_name)(Joystick *joystick, GError **error);
 };
 
 struct _Joystick
 {
 	Base parent;
 
-	gint value_min;
+	gchar *name;
 
-	gint value_max;
+	gint n_buttons;
+
+	gint n_axes;
 
 	gboolean opened;
 
 	JoystickEventHandler handler;
+
+	gpointer handler_data;
 };
+
+gboolean joystick_open(Joystick *self, const gchar *uri, GError **error);
+
+void joystick_close(Joystick *self);
 
 gint joystick_get_n_buttons(Joystick *self);
 
 gint joystick_get_n_axes(Joystick *self);
 
-void joystick_set_handler(Joystick *self, JoystickEventHandler handler);
+const gchar * joystick_get_name(Joystick *self);
 
-gint joystick_get_n_axes(Joystick *self);
+void joystick_set_handler(Joystick *self,
+						  JoystickEventHandler handler,
+						  gpointer user_data);
 
 void joystick_dispatch_event(Joystick *self, JoystickEvent *event);
 

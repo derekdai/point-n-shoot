@@ -3,6 +3,7 @@
 #include "point-n-shoot.h"
 #include "scene.h"
 #include "event.h"
+#include "platform.h"
 #include "joystick.h"
 #include "config.h"
 
@@ -23,6 +24,8 @@ struct _PointNShoot
 	Scene *scene;
 
 	GameKeys keys;
+
+	Platform *platform;
 };
 
 static void pns_activate(PointNShoot *self);
@@ -33,10 +36,16 @@ static void pns_key_press(PointNShoot *self, GdkEventKey *event);
 
 static void pns_key_release(PointNShoot *self, GdkEventKey *event);
 
-static PointNShoot * pns = NULL;;
+static PointNShoot * pns = NULL;
 
 PointNShoot * pns_new()
 {
+	GError *error = NULL;
+	Platform *platform = base_new(PLATFORM_TYPE);
+	if(! platform_init(platform, &error)) {
+		g_error("failed to initialize platform: %s", error->message);
+	}
+
 	PointNShoot *self = g_slice_new(PointNShoot);
 	self->app = gtk_application_new(APPLICATION_ID,
 									G_APPLICATION_FLAGS_NONE);
@@ -47,6 +56,7 @@ PointNShoot * pns_new()
 	self->scene = scene_new();
 	self->main_win = NULL;
 	self->keys = GAME_KEYS_NONE;
+	self->platform = platform;
 
 	return self;
 }
@@ -71,6 +81,18 @@ static gboolean pns_window_size_allocate(PointNShoot *self,
 	}
 
 	return TRUE;
+}
+
+static void pns_handle_joystick_event(Joystick *joystick,
+		 	 	 	 	 	 	 	  JoystickEvent *event,
+		 	 	 	 	 	 	 	  PointNShoot *self)
+{
+	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%d]",
+			  joystick_get_name(joystick),
+			  event->time,
+			  event->type == JOYSTICK_EVENT_BUTTON ? "BUTTON" : "AXIS",
+			  event->number,
+			  event->value);
 }
 
 static void pns_activate(PointNShoot *self)
@@ -98,12 +120,20 @@ static void pns_activate(PointNShoot *self)
 							 G_CALLBACK(pns_window_size_allocate),
 							 self);
 
+	gint js_num = platform_get_n_joysticks(self->platform) - 1;
+	for(; js_num >= 0; js_num --) {
+		Joystick *js = platform_get_joystick(self->platform, js_num);
+		joystick_set_handler(js,
+							 (JoystickEventHandler) pns_handle_joystick_event,
+							 self);
+	}
+
 	gtk_container_add(GTK_CONTAINER(self->main_win),
 					  scene_get_widget(self->scene));
 
-	gtk_widget_show_all(self->main_win);
-
 	gtk_application_add_window(self->app, GTK_WINDOW(self->main_win));
+
+	gtk_widget_show_all(self->main_win);
 }
 
 void pns_run(PointNShoot *self)
@@ -137,6 +167,7 @@ static void pns_free(PointNShoot *self)
 {
 	g_return_if_fail(self);
 
+	base_unref(self->platform);
 	base_unref(self->scene);
 
 	g_object_unref(self->app);

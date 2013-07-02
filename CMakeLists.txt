@@ -26,12 +26,15 @@ set(SRC_PNS
     src/dot
     src/scene
     src/joystick
+    src/platform
     src/point-n-shoot)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    list(APPEND SRC_PNS src/linuxjs)
-    set(JOYSTICK_TYPE linux_js_class)
-    set(JOYSTICK_HEADER \"linuxjs.h\")
+    list(APPEND SRC_PNS
+         src/linux/linuxplat
+         src/linux/linuxjs)
+    set(PLATFORM_TYPE linux_plat_class)
+    set(PLATFORM_HEADER \"linux/linuxplat.h\")
 endif()
 
 set(OBJ_PNS

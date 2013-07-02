@@ -2,5 +2,5 @@
 
 #define MUSIC_FILE			"DST-1990.mp3"
 
-#include @JOYSTICK_HEADER@
-#define JOYSTICK_TYPE		(&@JOYSTICK_TYPE@)
+#include 					@PLATFORM_HEADER@
+#define PLATFORM_TYPE		(&@PLATFORM_TYPE@)
