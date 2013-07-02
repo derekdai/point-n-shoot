@@ -14,7 +14,6 @@ enum _GameKeys
 	GAME_KEYS_DOWN		= 1 << 1,
 	GAME_KEYS_LEFT		= 1 << 2,
 	GAME_KEYS_RIGHT		= 1 << 3,
-	GAME_KEYS_FIRE		= 1 << 4,
 };
 
 G_END_DECLS

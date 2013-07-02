@@ -36,6 +36,10 @@ static void pns_key_press(PointNShoot *self, GdkEventKey *event);
 
 static void pns_key_release(PointNShoot *self, GdkEventKey *event);
 
+static void pns_handle_joystick_event(Joystick *joystick,
+		 	 	 	 	 	 	 	  JoystickEvent *event,
+		 	 	 	 	 	 	 	  PointNShoot *self);
+
 static PointNShoot * pns = NULL;
 
 PointNShoot * pns_new()
@@ -81,18 +85,6 @@ static gboolean pns_window_size_allocate(PointNShoot *self,
 	}
 
 	return TRUE;
-}
-
-static void pns_handle_joystick_event(Joystick *joystick,
-		 	 	 	 	 	 	 	  JoystickEvent *event,
-		 	 	 	 	 	 	 	  PointNShoot *self)
-{
-	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%f]",
-			  joystick_get_name(joystick),
-			  event->time,
-			  event->type == JOYSTICK_EVENT_BUTTON ? "BUTTON" : "AXIS",
-			  event->number,
-			  event->value);
 }
 
 static void pns_activate(PointNShoot *self)
@@ -242,6 +234,43 @@ static void pns_key_release(PointNShoot *self, GdkEventKey *event)
 		break;
 	default:
 		return;
+	}
+
+	pns_notify_key_state(self);
+}
+
+static void pns_handle_joystick_event(Joystick *joystick,
+		 	 	 	 	 	 	 	  JoystickEvent *event,
+		 	 	 	 	 	 	 	  PointNShoot *self)
+{
+	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%f]",
+			  joystick_get_name(joystick),
+			  event->time,
+			  event->type == JOYSTICK_EVENT_BUTTON ? "BUTTON" : "AXIS",
+			  event->number,
+			  event->value);
+
+	if(event->number & 1) {
+		if(0 == event->value) {
+			self->keys &= ~(GAME_KEYS_UP | GAME_KEYS_DOWN);
+		}
+		else if(0 > event->value) {
+			self->keys |= GAME_KEYS_UP;
+		}
+		else {
+			self->keys |= GAME_KEYS_DOWN;
+		}
+	}
+	else {
+		if(0 == event->value) {
+			self->keys &= ~(GAME_KEYS_LEFT | GAME_KEYS_RIGHT);
+		}
+		else if(0 > event->value) {
+			self->keys |= GAME_KEYS_LEFT;
+		}
+		else {
+			self->keys |= GAME_KEYS_RIGHT;
+		}
 	}
 
 	pns_notify_key_state(self);
