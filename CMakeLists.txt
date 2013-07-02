@@ -31,3 +31,8 @@ set(OBJ_PNS
 
 add_executable(${OBJ_PNS} ${SRC_PNS})
 target_link_libraries(${OBJ_PNS} ${GTK_LIBRARIES} ${GST_LIBRARIES} m)
+
+set(SRC_TEST_JOYSTICK tests/test-joystick)
+set(OBJ_TEST_JOYSTICK tests-joystick)
+add_executable(${OBJ_TEST_JOYSTICK} ${SRC_TEST_JOYSTICK})
+target_link_libraries(${OBJ_TEST_JOYSTICK} ${GTK_LIBRARIES})
