@@ -13,12 +13,26 @@ typedef struct _Scene Scene;
 
 typedef enum _SceneState SceneState;
 
+typedef enum _SceneLayer SceneLayer;
+
+typedef void (* SceneForeachLayerFunc)(Scene *self,
+									   SceneLayer layer,
+									   Item *items,
+									   gpointer user_data);
+
 enum _SceneState
 {
 	SCENE_STATE_NULL,
 	SCENE_STATE_PLAYING,
 	SCENE_STATE_PAUSE,
 	SCENE_STATE_END,
+};
+
+enum _SceneLayer
+{
+	SCENE_LAYER_FOREGROUND,
+	SCENE_LAYER_BACKGROUND,
+	SCENE_LAYER_LAST,
 };
 
 Scene * scene_new();
@@ -37,9 +51,13 @@ void scene_pause(Scene *self);
 
 void scene_restart(Scene *self);
 
-void scene_add_item(Scene *self, Item *item);
+void scene_add_item(Scene *self, SceneLayer layer, Item *item);
 
-void scene_remove_item(Scene *self, Item *item);
+void scene_remove_item(Scene *self, SceneLayer layer, Item *item);
+
+void scene_foreach_layer(Scene *self,
+						 SceneForeachLayerFunc func,
+						 gpointer user_data);
 
 void scene_set_keys(Scene *self, GameKeys keys);
 

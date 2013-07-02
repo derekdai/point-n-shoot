@@ -1,3 +1,4 @@
+#include <string.h>
 #include "scene.h"
 #include "arrow.h"
 #include "dot.h"
@@ -27,7 +28,7 @@
 
 struct _Scene
 {
-	Item base;
+	Base base;
 
 	GtkWidget *canvas;
 
@@ -37,7 +38,7 @@ struct _Scene
 
 	Arrow *arrow;
 
-	Item *items;
+	Item *items[SCENE_LAYER_LAST];
 
 	guint timer_handle;
 
@@ -56,17 +57,14 @@ static void scene_remove_refresh_timer(Scene *self);
 
 static void scene_remove_all_items(Scene *self);
 
-static void scene_draw(Item *item, cairo_t *cr);
+static void scene_draw(Scene *self, cairo_t *cr);
 
-static ItemClass scene_class = {
-		.parent = {
-			.name			= "Scene",
-			.parent			= BASE_CLASS(&item_class),
-			.size			= sizeof(Scene),
-			.init			= scene_init,
-			.dispose		= scene_dispose,
-		},
-		.draw				= scene_draw,
+static BaseClass scene_class = {
+		.name			= "Scene",
+		.parent			= &base_class,
+		.size			= sizeof(Scene),
+		.init			= scene_init,
+		.dispose		= scene_dispose,
 };
 
 Scene * scene_new()
@@ -90,20 +88,20 @@ void scene_set_height(Scene *self, gfloat height)
 	self->height = height;
 }
 
-void scene_add_item(Scene *self, Item *item)
+void scene_add_item(Scene *self, SceneLayer layer, Item *item)
 {
 	g_return_if_fail(self);
 	g_return_if_fail(item);
 
-	self->items = item_prepend(self->items, base_ref(item));
+	self->items[layer] = item_prepend(self->items[layer], base_ref(item));
 }
 
-void scene_remove_item(Scene *self, Item *item)
+void scene_remove_item(Scene *self, SceneLayer layer, Item *item)
 {
 	g_return_if_fail(self);
 	g_return_if_fail(item);
 
-	self->items = item_remove(self->items, item);
+	self->items[layer] = item_remove(self->items[layer], item);
 	base_unref(item);
 }
 
@@ -112,10 +110,11 @@ static void scene_init(Base *base)
 	Scene *self = SCENE(base);
 	self->width = 0;
 	self->height = 0;
-	self->items = NULL;
 	self->timer_handle = 0;
 	self->state = SCENE_STATE_NULL;
 	self->keys = GAME_KEYS_NONE;
+
+	memset(self->items, 0, sizeof(self->items));
 
 	self->canvas = gtk_drawing_area_new();
 	g_signal_connect_swapped(self->canvas,
@@ -134,7 +133,7 @@ static void scene_init(Base *base)
 							ARROW_ANGLE,
 							ARROW_SPEED,
 							ARROW_COLOR);
-	scene_add_item(self, ITEM(self->arrow));
+	scene_add_item(self, SCENE_LAYER_FOREGROUND, ITEM(self->arrow));
 }
 
 GtkWidget * scene_get_widget(Scene *self)
@@ -144,9 +143,35 @@ GtkWidget * scene_get_widget(Scene *self)
 	return self->canvas;
 }
 
-static void scene_draw(Item *item, cairo_t *cr)
+typedef void (* SceneForeachLayerFunc)(Scene *self,
+									   SceneLayer layer,
+									   Item *items,
+									   gpointer user_data);
+
+void scene_foreach_layer(Scene *self,
+						 SceneForeachLayerFunc func,
+						 gpointer user_data)
 {
-	item_foreach(SCENE(item)->items, (GFunc) item_draw, cr);
+	gint layer;
+	for(layer = SCENE_LAYER_LAST - 1; layer >= SCENE_LAYER_FOREGROUND; layer --) {
+		if(! self->items[layer]) {
+			continue;
+		}
+		func(self, layer, self->items[layer], user_data);
+	}
+}
+
+static void scene_draw_layer(Scene *self,
+						     SceneLayer layer,
+						     Item *items,
+						     cairo_t *cr)
+{
+	item_foreach(items, (GFunc) item_draw, cr);
+}
+
+static void scene_draw(Scene *self, cairo_t *cr)
+{
+	scene_foreach_layer(self, (SceneForeachLayerFunc) scene_draw_layer, cr);
 }
 
 static void scene_dispose(Base *base)
@@ -156,10 +181,20 @@ static void scene_dispose(Base *base)
 	scene_remove_all_items(self);
 }
 
+static void scene_refresh_items(Scene *self,
+		   	   	   	   	   	    SceneLayer layer,
+		   	   	   	   	   	    Item *items,
+		   	   	   	   	   	    gpointer user_data)
+{
+	item_foreach(items, (GFunc) item_refresh, self);
+}
+
 static gboolean scene_refresh(Scene *self)
 {
-	item_refresh(ITEM(self->arrow), self);
-	item_foreach(self->items, (GFunc) item_refresh, self);
+//	item_refresh(ITEM(self->arrow), self);
+	scene_foreach_layer(self,
+						(SceneForeachLayerFunc) scene_refresh_items,
+						NULL);
 	gtk_widget_queue_draw(self->canvas);
 
 	return TRUE;
@@ -193,17 +228,21 @@ static void scene_reset_arrow(Scene *self)
 	arrow_set_degree(self->arrow, ARROW_ANGLE);
 }
 
-static void scene_remove_one_item(Item *item, Scene *self)
+static void scene_remove_layer_items(Scene *self,
+ 	   	   	    					 SceneLayer layer,
+ 	   	   	    					 Item *items,
+ 	   	   	    					 gpointer user_data)
 {
-	scene_remove_item(self, item);
+	while(items) {
+		items = item_remove(items, items);
+	}
 }
 
 static void scene_remove_all_items(Scene *self)
 {
-	if(self->items) {
-		item_foreach(self->items, (GFunc) scene_remove_one_item, self);
-		self->items = NULL;
-	}
+	scene_foreach_layer(self,
+						(SceneForeachLayerFunc) scene_remove_layer_items,
+						NULL);
 }
 
 static void scene_reset(Scene *self)
@@ -228,19 +267,19 @@ void scene_start(Scene *self)
 		scene_reset_arrow(self);
 
 		Dot *dot = dot_new(100, 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
-		scene_add_item(self, ITEM(dot));
+		scene_add_item(self, SCENE_LAYER_FOREGROUND, ITEM(dot));
 		base_unref(dot);
 
 		dot = dot_new(self->width - 100, 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
-		scene_add_item(self, ITEM(dot));
+		scene_add_item(self, SCENE_LAYER_FOREGROUND, ITEM(dot));
 		base_unref(dot);
 
 		dot = dot_new(100, self->height - 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
-		scene_add_item(self, ITEM(dot));
+		scene_add_item(self, SCENE_LAYER_FOREGROUND, ITEM(dot));
 		base_unref(dot);
 
 		dot = dot_new(self->width - 100, self->height - 100, DOT_SPEED, DOT_RADIUS, DOT_COLOR);
-		scene_add_item(self, ITEM(dot));
+		scene_add_item(self, SCENE_LAYER_FOREGROUND, ITEM(dot));
 		base_unref(dot);
 
 //		gint i;

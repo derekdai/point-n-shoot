@@ -40,6 +40,8 @@ gint main(gint argc, gchar *args[])
 
 	gst_bus_remove_signal_watch(bus);
 	g_object_unref(bus);
+	gst_element_set_state(playbin, GST_STATE_NULL);
+	g_object_ref(playbin);
 
 	pns_destroy();
 
