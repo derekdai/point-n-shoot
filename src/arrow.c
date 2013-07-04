@@ -3,7 +3,6 @@
 #include "arrow.h"
 #include "scene.h"
 #include "utils.h"
-#include "event.h"
 
 #define ANGLE_PER_ROTATE		(10.0)
 
@@ -131,6 +130,20 @@ gfloat arrow_get_y(Arrow *self)
 	return self->y;
 }
 
+gfloat arrow_get_width(Arrow *self)
+{
+	g_return_val_if_fail(self, 0.0);
+
+	return self->width;
+}
+
+gfloat arrow_get_height(Arrow *self)
+{
+	g_return_val_if_fail(self, 0.0);
+
+	return self->height;
+}
+
 void arrow_set_degree(Arrow *self, gfloat degree)
 {
 	g_return_if_fail(self);
@@ -141,37 +154,17 @@ void arrow_set_degree(Arrow *self, gfloat degree)
 static void arrow_refresh(Item *item, Scene *scene)
 {
 	Arrow *self = ARROW(item);
-	GameKeys keys = scene_get_keys(scene);
-	keys &= (GAME_KEYS_UP | GAME_KEYS_DOWN | GAME_KEYS_LEFT | GAME_KEYS_RIGHT);
-	switch(keys) {
-	case GAME_KEYS_UP:
-		self->degree = 270.0;
-		break;
-	case GAME_KEYS_DOWN:
-		self->degree = 90.0;
-		break;
-	case GAME_KEYS_LEFT:
-		self->degree = 180.0;
-		break;
-	case GAME_KEYS_RIGHT:
-		self->degree = 0.0;
-		break;
-	case GAME_KEYS_UP | GAME_KEYS_RIGHT:
-		self->degree = 315.0;
-		break;
-	case GAME_KEYS_UP | GAME_KEYS_LEFT:
-		self->degree = 225.0;
-		break;
-	case GAME_KEYS_DOWN | GAME_KEYS_RIGHT:
-		self->degree = 45.0;
-		break;
-	case GAME_KEYS_DOWN | GAME_KEYS_LEFT:
-		self->degree = 135.0;
-		break;
-	default:
+
+	gfloat x, y;
+	scene_get_axes(scene, &x, &y);
+	if(! x && ! y) {
 		return;
 	}
 
-	self->x += self->speed * cos(TO_RADIAN(self->degree));
-	self->y += self->speed * sin(TO_RADIAN(self->degree));
+	self->x += self->speed * x;
+	self->y += self->speed * y;
+	self->degree = atan(y/x) * 180.0 / PI;
+	if(x < 0) {
+		self->degree += 180.0;
+	}
 }

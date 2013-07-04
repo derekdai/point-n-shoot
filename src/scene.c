@@ -42,7 +42,9 @@ struct _Scene
 
 	guint timer_handle;
 
-	GameKeys keys;
+	gfloat x_axis;
+
+	gfloat y_axis;
 
 	SceneState state;
 };
@@ -112,7 +114,8 @@ static void scene_init(Base *base)
 	self->height = 0;
 	self->timer_handle = 0;
 	self->state = SCENE_STATE_NULL;
-	self->keys = GAME_KEYS_NONE;
+	self->x_axis = 0.0;
+	self->y_axis = 0.0;
 
 	memset(self->items, 0, sizeof(self->items));
 
@@ -191,7 +194,6 @@ static void scene_refresh_items(Scene *self,
 
 static gboolean scene_refresh(Scene *self)
 {
-//	item_refresh(ITEM(self->arrow), self);
 	scene_foreach_layer(self,
 						(SceneForeachLayerFunc) scene_refresh_items,
 						NULL);
@@ -326,28 +328,36 @@ void scene_restart(Scene *self)
 	scene_start(self);
 }
 
-void scene_set_keys(Scene *self, GameKeys keys)
+void scene_update_axes(Scene *self, gfloat x_axis, gfloat y_axis)
 {
 	g_return_if_fail(self);
 
-	self->keys = keys;
-
-	scene_remove_refresh_timer(self);
-	scene_start_refresh_timer(self);
-	scene_refresh(self);
+	self->x_axis = x_axis;
+	self->y_axis = y_axis;
 }
 
-GameKeys scene_get_keys(Scene *self)
+void scene_get_axes(Scene *self, gfloat *x_axis, gfloat *y_axis)
 {
-	g_return_val_if_fail(self, GAME_KEYS_NONE);
+	g_return_if_fail(self);
 
-	return self->keys;
+	if(x_axis) {
+		*x_axis = self->x_axis;
+	}
+
+	if(y_axis) {
+		*y_axis = self->y_axis;
+	}
 }
 
 void scene_get_arrow_postion(Scene *self, gfloat *x, gfloat *y)
 {
 	g_return_if_fail(self && x && y);
 
-	*x = arrow_get_x(self->arrow);
-	*y = arrow_get_y(self->arrow);
+	if(x) {
+		*x = arrow_get_x(self->arrow) + arrow_get_width(self->arrow) / 2;
+	}
+
+	if(y) {
+		*y = arrow_get_y(self->arrow) + arrow_get_height(self->arrow) / 2;
+	}
 }

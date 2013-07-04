@@ -2,7 +2,6 @@
 #include <gdk/gdkkeysyms.h>
 #include "point-n-shoot.h"
 #include "scene.h"
-#include "event.h"
 #include "platform.h"
 #include "joystick.h"
 #include "config.h"
@@ -23,7 +22,9 @@ struct _PointNShoot
 
 	Scene *scene;
 
-	GameKeys keys;
+	gfloat x_axis;
+
+	gfloat y_axis;
 
 	Platform *platform;
 };
@@ -36,7 +37,7 @@ static void pns_key_press(PointNShoot *self, GdkEventKey *event);
 
 static void pns_key_release(PointNShoot *self, GdkEventKey *event);
 
-static void pns_handle_joystick_event(Joystick *joystick,
+static void pns_update_joystick_state(Joystick *joystick,
 		 	 	 	 	 	 	 	  JoystickEvent *event,
 		 	 	 	 	 	 	 	  PointNShoot *self);
 
@@ -59,7 +60,8 @@ PointNShoot * pns_new()
 							 self);
 	self->scene = scene_new();
 	self->main_win = NULL;
-	self->keys = GAME_KEYS_NONE;
+	self->x_axis = 0.0;
+	self->y_axis = 0.0;
 	self->platform = platform;
 
 	return self;
@@ -116,7 +118,7 @@ static void pns_activate(PointNShoot *self)
 	for(; js_num >= 0; js_num --) {
 		Joystick *js = platform_get_joystick(self->platform, js_num);
 		joystick_set_handler(js,
-							 (JoystickEventHandler) pns_handle_joystick_event,
+							 (JoystickEventHandler) pns_update_joystick_state,
 							 self);
 	}
 
@@ -177,38 +179,31 @@ void pns_destroy()
 
 static void pns_notify_key_state(PointNShoot *self)
 {
-	scene_set_keys(self->scene, self->keys);
+	scene_update_axes(self->scene, self->x_axis, self->y_axis);
 }
 
 static void pns_key_press(PointNShoot *self, GdkEventKey *event)
 {
-	GameKeys keys;
 	switch(event->keyval) {
 	case GDK_KEY_A:
 	case GDK_KEY_a:
-		keys = GAME_KEYS_LEFT;
+		self->x_axis = -1.0;
 		break;
 	case GDK_KEY_D:
 	case GDK_KEY_d:
-		keys = GAME_KEYS_RIGHT;
+		self->x_axis = 1.0;
 		break;
 	case GDK_KEY_W:
 	case GDK_KEY_w:
-		keys = GAME_KEYS_UP;
+		self->y_axis = -1.0;
 		break;
 	case GDK_KEY_S:
 	case GDK_KEY_s:
-		keys = GAME_KEYS_DOWN;
+		self->y_axis = 1.0;
 		break;
 	default:
 		return;
 	}
-
-	if(keys & self->keys) {
-		return;
-	}
-
-	self->keys |= keys;
 
 	pns_notify_key_state(self);
 }
@@ -218,19 +213,15 @@ static void pns_key_release(PointNShoot *self, GdkEventKey *event)
 	switch(event->keyval) {
 	case GDK_KEY_A:
 	case GDK_KEY_a:
-		self->keys &= ~GAME_KEYS_LEFT;
-		break;
 	case GDK_KEY_D:
 	case GDK_KEY_d:
-		self->keys &= ~GAME_KEYS_RIGHT;
+		self->x_axis = 0.0;
 		break;
 	case GDK_KEY_W:
 	case GDK_KEY_w:
-		self->keys &= ~GAME_KEYS_UP;
-		break;
 	case GDK_KEY_S:
 	case GDK_KEY_s:
-		self->keys &= ~GAME_KEYS_DOWN;
+		self->y_axis = 0.0;
 		break;
 	default:
 		return;
@@ -239,38 +230,26 @@ static void pns_key_release(PointNShoot *self, GdkEventKey *event)
 	pns_notify_key_state(self);
 }
 
-static void pns_handle_joystick_event(Joystick *joystick,
+static void pns_update_joystick_state(Joystick *joystick,
 		 	 	 	 	 	 	 	  JoystickEvent *event,
 		 	 	 	 	 	 	 	  PointNShoot *self)
 {
-	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%f]",
-			  joystick_get_name(joystick),
-			  event->time,
-			  event->type == JOYSTICK_EVENT_BUTTON ? "BUTTON" : "AXIS",
-			  event->number,
-			  event->value);
+//	g_message("Joystick %s[time=%u,type=%s,number=%d,value=%f]",
+//			  joystick_get_name(joystick),
+//			  event->time,
+//			  event->type == JOYSTICK_EVENT_BUTTON ? "BUTTON" : "AXIS",
+//			  event->number,
+//			  event->value);
+
+	if(JOYSTICK_EVENT_AXES != event->type) {
+		return;
+	}
 
 	if(event->number & 1) {
-		if(0.0 == event->value) {
-			self->keys &= ~(GAME_KEYS_UP | GAME_KEYS_DOWN);
-		}
-		else if(0.0 > event->value) {
-			self->keys |= GAME_KEYS_UP;
-		}
-		else {
-			self->keys |= GAME_KEYS_DOWN;
-		}
+		self->y_axis = event->value;
 	}
 	else {
-		if(0.0 == event->value) {
-			self->keys &= ~(GAME_KEYS_LEFT | GAME_KEYS_RIGHT);
-		}
-		else if(0.0 > event->value) {
-			self->keys |= GAME_KEYS_LEFT;
-		}
-		else {
-			self->keys |= GAME_KEYS_RIGHT;
-		}
+		self->x_axis = event->value;
 	}
 
 	pns_notify_key_state(self);

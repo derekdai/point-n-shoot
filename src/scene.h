@@ -3,7 +3,6 @@
 
 #include <gtk/gtk.h>
 #include "item.h"
-#include "event.h"
 
 G_BEGIN_DECLS
 
@@ -59,9 +58,9 @@ void scene_foreach_layer(Scene *self,
 						 SceneForeachLayerFunc func,
 						 gpointer user_data);
 
-void scene_set_keys(Scene *self, GameKeys keys);
+void scene_update_axes(Scene *self, gfloat x_axis, gfloat y_axis);
 
-GameKeys scene_get_keys(Scene *self);
+void scene_get_axes(Scene *self, gfloat *x_axis, gfloat *y_axis);
 
 void scene_get_arrow_postion(Scene *self, gfloat *x, gfloat *y);
 

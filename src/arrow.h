@@ -2,7 +2,6 @@
 #define __ARROW_H_
 
 #include <glib.h>
-#include "event.h"
 
 G_BEGIN_DECLS
 
@@ -25,6 +24,10 @@ gfloat arrow_get_x(Arrow *self);
 void arrow_set_y(Arrow *self, gfloat x);
 
 gfloat arrow_get_y(Arrow *self);
+
+gfloat arrow_get_width(Arrow *self);
+
+gfloat arrow_get_height(Arrow *self);
 
 void arrow_set_degree(Arrow *self, gfloat x);
 
