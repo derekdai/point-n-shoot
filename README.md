@@ -21,7 +21,7 @@ Out of source tree build is recommended way to build point-n-shoot.
 ```bash
 $ mkdir point-n-shoot_build
 $ cd point-n-shoot_build
-$ ../point-n-shoot_build/autogen.sh
+$ ../point-n-shoot/autogen.sh
 $ make
 ```
 
